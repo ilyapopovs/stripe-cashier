@@ -2,4 +2,4 @@
 .env
 /*.rest
 /lib
-serviceAccountKey.js
+service-account-key.json
