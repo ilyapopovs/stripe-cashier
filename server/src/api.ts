@@ -6,6 +6,11 @@ import { runAsync } from "./helpers";
 import { createPaymentIntent } from "./payments";
 import { handleStripeWebhook } from "./webhooks";
 import { createSetupIntent, listPaymentMethods } from "./customer";
+import {
+  cancelSubscription,
+  createSubscription,
+  listSubscriptions,
+} from "./billing";
 
 export const app = express();
 
@@ -70,6 +75,37 @@ app.get(
     const wallet = await listPaymentMethods(user.uid);
 
     res.send(wallet.data);
+  })
+);
+
+app.post(
+  "/subscriptions/",
+  runAsync(async (req: Request, res: Response) => {
+    const user = validateUser(req);
+    const { plan, payment_method } = req.body;
+    const subscription = await createSubscription(
+      user.uid,
+      plan,
+      payment_method
+    );
+    res.send(subscription);
+  })
+);
+
+app.get(
+  "/subscriptions/",
+  runAsync(async (req: Request, res: Response) => {
+    const user = validateUser(req);
+    const subscriptions = await listSubscriptions(user.uid);
+    res.send(subscriptions.data);
+  })
+);
+
+app.patch(
+  "/subscriptions/:id",
+  runAsync(async (req: Request, res: Response) => {
+    const user = validateUser(req);
+    res.send(await cancelSubscription(user.uid, req.params.id));
   })
 );
 

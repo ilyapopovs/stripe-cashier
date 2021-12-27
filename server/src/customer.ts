@@ -14,25 +14,38 @@ export async function listPaymentMethods(userId: string) {
   return stripe.paymentMethods.list({ customer: customer.id, type: "card" });
 }
 
+type StripeCustomerWithMetadata = Stripe.Customer & {
+  metadata: { firebaseUID: string };
+};
+type StripeDeletedCustomerWithMetadata = Stripe.DeletedCustomer & {
+  metadata: { firebaseUID: string };
+};
+
 export async function getOrCreateCustomer(
   userId: string,
   params?: Stripe.CustomerCreateParams
-): Promise<Stripe.Response<Stripe.Customer | Stripe.DeletedCustomer>> {
+): Promise<
+  Stripe.Response<
+    StripeCustomerWithMetadata | StripeDeletedCustomerWithMetadata
+  >
+> {
   const userSnapshot = await db.collection("users").doc(userId).get();
   const { stripeCustomerId, email } = userSnapshot.data();
 
   if (!stripeCustomerId) {
-    const customer = await stripe.customers.create({
+    const customer = (await stripe.customers.create({
       email,
       metadata: {
         firebaseUID: userId,
       },
       ...params,
-    });
+    })) as Stripe.Response<StripeCustomerWithMetadata>;
     await userSnapshot.ref.update({ stripeCustomerId: customer.id });
 
     return customer;
   }
 
-  return await stripe.customers.retrieve(stripeCustomerId);
+  return (await stripe.customers.retrieve(stripeCustomerId)) as Stripe.Response<
+    StripeCustomerWithMetadata | StripeDeletedCustomerWithMetadata
+  >;
 }
