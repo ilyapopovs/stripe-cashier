@@ -1,16 +1,7 @@
 import { stripe } from "./";
 import Stripe from "stripe";
-
-const webhookHandlers = {
-  "payment_intent.succeeded": async (data: Stripe.PaymentIntent) => {
-    // Some business logic
-  },
-  "payment_intent.payment_failed": async (data: Stripe.PaymentIntent) => {
-    // Some business logic
-  },
-  default: (eventType: string) =>
-    console.log(`Received unsupported hook: ${eventType}`),
-};
+import { db } from "./firebase";
+import { firestore } from "firebase-admin";
 
 /**
  * Validate the stripe webhook secret, then call the handler for the event type
@@ -33,3 +24,38 @@ export const handleStripeWebhook = async (req, res) => {
     res.status(400).send(`Webhook Error: ${err.message}`);
   }
 };
+
+const webhookHandlers = {
+  "payment_intent.succeeded": async (data: Stripe.PaymentIntent) => {},
+  "payment_intent.payment_failed": async (data: Stripe.PaymentIntent) => {},
+  "customer.subscription.deleted": (data: Stripe.Subscription) => {},
+  "customer.subscription.created": onCustomerSubscriptionCreated,
+  "invoice.payment_succeeded": (data: Stripe.Invoice) => {},
+  "invoice.payment_failed": onInvoicePaymentFailed,
+  default: (eventType: string) =>
+    console.log(`Received unsupported hook: ${eventType}`),
+};
+
+async function onCustomerSubscriptionCreated(data: Stripe.Subscription) {
+  const customer = (await stripe.customers.retrieve(
+    data.customer as string
+  )) as Stripe.Customer;
+  const userId = customer.metadata.firebaseUID;
+  const userRef = db.collection("users").doc(userId);
+  const planId = data.items.data.at(0).id;
+  await userRef.update({
+    activePlans: firestore.FieldValue.arrayUnion(planId),
+  });
+}
+
+async function onInvoicePaymentFailed(data: Stripe.Invoice) {
+  const customer = (await stripe.customers.retrieve(
+    data.customer as string
+  )) as Stripe.Customer;
+  const userSnapshot = await db
+    .collection("users")
+    .doc(customer.metadata.firebaseUID)
+    .get();
+
+  await userSnapshot.ref.update({ status: "PAST_DUE" });
+}
