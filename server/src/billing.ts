@@ -66,7 +66,7 @@ export async function cancelSubscription(
   // });
 
   if (subscription.status === "canceled") {
-    const planId = subscription.items.data.at(0).id;
+    const planId = subscription.items.data.at(0).price.id;
     await db
       .collection("users")
       .doc(userId)

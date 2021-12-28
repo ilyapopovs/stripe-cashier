@@ -42,7 +42,7 @@ async function onCustomerSubscriptionCreated(data: Stripe.Subscription) {
   )) as Stripe.Customer;
   const userId = customer.metadata.firebaseUID;
   const userRef = db.collection("users").doc(userId);
-  const planId = data.items.data.at(0).id;
+  const planId = data.items.data.at(0).price.id;
   await userRef.update({
     activePlans: firestore.FieldValue.arrayUnion(planId),
   });
