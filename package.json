@@ -1,0 +1,22 @@
+{
+  "name": "stripe-cashier",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ilyapopovs/stripe-cashier.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ilyapopovs/stripe-cashier/issues"
+  },
+  "homepage": "https://github.com/ilyapopovs/stripe-cashier#readme",
+  "dependencies": {
+    "prettier": "^2.5.1"
+  }
+}
