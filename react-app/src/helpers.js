@@ -7,7 +7,7 @@ const API = "http://localhost:3333";
 export async function fetchFromAPI(endpointURL, opts, user = null) {
   const { method, body } = { method: "POST", body: null, ...opts };
 
-  user ??= auth.currentUser;
+  user = user ? user : auth.currentUser;
   const token = user && (await user.getIdToken());
 
   const res = await fetch(`${API}/${endpointURL}`, {
