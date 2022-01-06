@@ -4,10 +4,10 @@ const API = "http://localhost:3333";
 /**
  * Fetch data from API, use Firebase Auth token (JWT) for authorization
  */
-export async function fetchFromAPI(endpointURL, opts) {
+export async function fetchFromAPI(endpointURL, opts, user = null) {
   const { method, body } = { method: "POST", body: null, ...opts };
 
-  const user = auth.currentUser;
+  user ??= auth.currentUser;
   const token = user && (await user.getIdToken());
 
   const res = await fetch(`${API}/${endpointURL}`, {

@@ -3,7 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyCe7k-fwS6iVZMBP32WcywmHtx4v3zQGnw",
   authDomain: "stripe-cashier.firebaseapp.com",
   projectId: "stripe-cashier",
